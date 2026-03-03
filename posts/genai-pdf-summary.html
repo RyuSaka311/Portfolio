@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF 要約ワークフローを生成AIで組む</title>
+  <meta name="description" content="長文PDFを段階分割して再現性高く要約する手順。">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="PDF 要約ワークフローを生成AIで組む">
+  <meta property="og:description" content="長文PDFを段階分割して再現性高く要約する手順。">
+  <meta property="og:url" content="https://kind-mud-063fee810.4.azurestaticapps.net/posts/genai-pdf-summary.html">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="../index.html">Ryu Sakamaki Tech Blog</a>
+      <nav class="nav">
+        <a href="../index.html#featured">特集記事</a>
+        <a href="../index.html#latest">最新記事</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="article">
+    <div class="container">
+      <article class="content">
+        <h1>PDF 要約ワークフローを生成AIで組む</h1>
+        <p class="meta">2026-03-03 | 生成AI</p>
+        <p>長文PDFを一度に要約するより、段階を分けた方が精度と再現性が上がります。</p>
+        <h2>1. 前処理</h2>
+        <p>PDF抽出テキストを章単位に分割し、見出しやページ情報をメタデータとして保持します。</p>
+        <h2>2. 中間要約</h2>
+        <p>各チャンクごとに要点・キーワード・根拠文を抽出し、中間結果を保存します。</p>
+        <h2>3. 最終要約</h2>
+        <p>中間要約を統合して全体要約を作成し、原文の参照位置を残して検証可能性を確保します。</p>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azure VM 初期構築チェックリスト</title>
+  <meta name="description" content="運用前に確認すべきネットワーク・監視・バックアップ。">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Azure VM 初期構築チェックリスト">
+  <meta property="og:description" content="運用前に確認すべきネットワーク・監視・バックアップ。">
+  <meta property="og:url" content="https://kind-mud-063fee810.4.azurestaticapps.net/posts/azure-vm-checklist.html">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="../index.html">Ryu Sakamaki Tech Blog</a>
+      <nav class="nav">
+        <a href="../index.html#featured">特集記事</a>
+        <a href="../index.html#latest">最新記事</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="article">
+    <div class="container">
+      <article class="content">
+        <h1>Azure VM 初期構築チェックリスト</h1>
+        <p class="meta">2026-03-03 | Azure</p>
+        <p>VMは作成後の初期設定が品質を左右します。最低限の確認項目を短くまとめます。</p>
+        <h2>1. ネットワーク制御</h2>
+        <p>NSGで必要ポートだけを開放し、管理アクセス元IPを絞ります。</p>
+        <h2>2. 監視と通知</h2>
+        <p>CPU、メモリ、ディスク空き容量を監視し、閾値超過で通知されるよう設定します。</p>
+        <h2>3. バックアップと復旧テスト</h2>
+        <p>Azure Backup を有効化し、実際に復旧テストまで実施して手順を確定します。</p>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

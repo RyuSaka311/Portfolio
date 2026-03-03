@@ -1,0 +1,5 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://kind-mud-063fee810.4.azurestaticapps.net/sitemap.xml
+

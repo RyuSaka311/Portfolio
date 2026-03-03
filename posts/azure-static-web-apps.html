@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azure Static Web Apps でポートフォリオを公開する最短手順</title>
+  <meta name="description" content="GitHub連携からデプロイ確認までを短手順で整理。">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Azure Static Web Apps でポートフォリオを公開する最短手順">
+  <meta property="og:description" content="GitHub連携からデプロイ確認までを短手順で整理。">
+  <meta property="og:url" content="https://kind-mud-063fee810.4.azurestaticapps.net/posts/azure-static-web-apps.html">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="../index.html">Ryu Sakamaki Tech Blog</a>
+      <nav class="nav">
+        <a href="../index.html#featured">特集記事</a>
+        <a href="../index.html#latest">最新記事</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="article">
+    <div class="container">
+      <article class="content">
+        <h1>Azure Static Web Apps でポートフォリオを公開する最短手順</h1>
+        <p class="meta">2026-03-03 | Azure</p>
+        <p>Azure Static Web Apps は、静的サイト公開の初手として扱いやすいサービスです。最短で公開する流れをまとめます。</p>
+        <h2>1. リポジトリ準備</h2>
+        <p>公開対象のHTML/CSSをGitHubへpushします。公開ブランチは `main` に揃えると運用がシンプルです。</p>
+        <h2>2. Azureリソース作成</h2>
+        <p>Azure PortalでStatic Web Appsを作成し、GitHub認証でリポジトリとブランチを選択します。</p>
+        <h2>3. デプロイ確認</h2>
+        <p>初回デプロイ成功後、発行URLで表示確認します。以後は `main` へのpushで自動反映されます。</p>
+      </article>
+    </div>
+  </main>
+</body>
+</html>

@@ -2,26 +2,107 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>Ryu Sakamaki Portfolio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ryu Sakamaki Tech Blog</title>
+  <meta name="description" content="Unity・Azure・生成AIの実践知をまとめる技術ブログ">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Ryu Sakamaki Tech Blog">
+  <meta property="og:description" content="Unity・Azure・生成AIの実践知をまとめる技術ブログ">
+  <meta property="og:url" content="https://kind-mud-063fee810.4.azurestaticapps.net/">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>技術ポートフォリオ</h1>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="index.html">Ryu Sakamaki Tech Blog</a>
+      <nav class="nav">
+        <a href="#latest">最新記事</a>
+        <a href="#categories">カテゴリ</a>
+        <a href="#about">プロフィール</a>
+      </nav>
+    </div>
+  </header>
 
-  <section>
-    <h2>Unity開発</h2>
-    <p>2Dゲーム開発</p>
-  </section>
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-card">
+          <h1>実装と検証を軸にした技術ブログ</h1>
+          <p>Unity、Azure、生成AIを中心に、手を動かして得た知見を短く実用的にまとめています。</p>
+        </div>
+      </div>
+    </section>
 
-  <section>
-    <h2>Azure</h2>
-    <p>Static Web Apps / VM構築経験</p>
-  </section>
+    <section class="section" id="featured">
+      <div class="container">
+        <h2>特集記事</h2>
+        <article class="card featured">
+          <h3>Azure Static Web Apps でポートフォリオを公開する最短手順</h3>
+          <p class="meta">2026-03-03 | Azure</p>
+          <p>GitHub 連携からデプロイ確認までを、つまずきやすい設定ポイント付きで整理しました。</p>
+          <a class="button" href="posts/azure-static-web-apps.html">記事を読む</a>
+        </article>
+      </div>
+    </section>
 
-  <section>
-    <h2>生成AI</h2>
-    <p>IRBrain構築 / PDF要約 / 画像AI</p>
-  </section>
+    <section class="section" id="latest">
+      <div class="container">
+        <h2>最新記事</h2>
+        <div class="grid grid-3">
+          <article class="card">
+            <h3>Unity 2D で当たり判定を安定させる設計メモ</h3>
+            <p class="meta">2026-03-03 | Unity</p>
+            <p>移動処理とコライダー設定を分離して、予期しないすり抜けを減らす基本パターン。</p>
+            <a href="posts/unity-2d-collision.html">続きを読む</a>
+          </article>
 
+          <article class="card">
+            <h3>Azure VM 初期構築チェックリスト</h3>
+            <p class="meta">2026-03-03 | Azure</p>
+            <p>最初に押さえるネットワーク、監視、バックアップ設定をチェックリスト化。</p>
+            <a href="posts/azure-vm-checklist.html">続きを読む</a>
+          </article>
+
+          <article class="card">
+            <h3>PDF 要約ワークフローを生成AIで組む</h3>
+            <p class="meta">2026-03-03 | 生成AI</p>
+            <p>長文PDFから要点抽出する処理を、小さなステップに分けて再現性重視で解説。</p>
+            <a href="posts/genai-pdf-summary.html">続きを読む</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="categories">
+      <div class="container">
+        <h2>カテゴリ</h2>
+        <div class="tag-list">
+          <span class="tag">Unity</span>
+          <span class="tag">Azure</span>
+          <span class="tag">生成AI</span>
+          <span class="tag">アーキテクチャ</span>
+          <span class="tag">運用メモ</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="container">
+        <h2>プロフィール</h2>
+        <article class="card">
+          <p>坂巻 竜。ゲーム開発、クラウド構築、生成AI活用を横断して、実務に繋がる実装知識を蓄積しています。</p>
+          <p>このブログでは「すぐ試せること」と「運用で困らないこと」を重視して発信します。</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 Ryu Sakamaki Tech Blog</p>
+    </div>
+  </footer>
 </body>
 </html>
+
