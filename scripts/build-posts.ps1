@@ -173,10 +173,10 @@ foreach ($file in $mdFiles) {
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="logo" href="../index.html">Ryu Sakamaki Tech Blog</a>
+      <a class="logo" href="../index.html">酒巻 龍 Tech Blog</a>
       <nav class="nav">
         <a href="../index.html#featured">特集記事</a>
-        <a href="../index.html#latest">最新記事</a>
+        <a href="../index.html#categories">最新記事</a>
       </nav>
     </div>
   </header>
@@ -198,4 +198,6 @@ $articleContent
 }
 
 Write-Host "Generated $($mdFiles.Count) post(s)."
+
+
 
