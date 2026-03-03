@@ -326,3 +326,9 @@ a:hover {
 }
 
 
+/* readability tuning: keep generous side margins on article pages */
+.article .content {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
