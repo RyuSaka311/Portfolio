@@ -247,3 +247,15 @@ main .container > .page-lead,
   text-align: left;
 }
 
+
+.home-main .hero .container,
+.home-main .section .container {
+  max-width: 760px;
+}
+
+.home-main .section .container {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 2rem;
+}
