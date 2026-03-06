@@ -25,10 +25,7 @@ a {
   text-decoration: none;
 }
 
-.container {
-  width: min(1100px, 92%);
-  margin: 0 auto;
-}
+.container {`r`n  width: min(960px, 92%);`r`n  margin: 0 auto;`r`n}
 
 .site-header {
   background: var(--surface);
@@ -217,4 +214,32 @@ h1 {
   .site-nav a {
     width: 100%;
   }
+}
+
+
+main .container > h1,
+main .container > .page-lead,
+.section .container > h2,
+.section .container > p {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero {
+  text-align: center;
+}
+
+.hero .intro {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-group {
+  justify-content: center;
+}
+
+.card,
+.article-item {
+  text-align: left;
 }
