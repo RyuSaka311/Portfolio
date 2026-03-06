@@ -25,7 +25,10 @@ a {
   text-decoration: none;
 }
 
-.container {`r`n  width: min(960px, 92%);`r`n  margin: 0 auto;`r`n}
+.container {
+  width: min(960px, 92%);
+  margin: 0 auto;
+}
 
 .site-header {
   background: var(--surface);
@@ -243,3 +246,4 @@ main .container > .page-lead,
 .article-item {
   text-align: left;
 }
+
