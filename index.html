@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>dragon-enginner</title>
-  <meta name="description" content="Unity・Azure・生成AIの実践知をまとめる技術ブログ">
+  <meta name="description" content="Azure・生成AIの実践知をまとめる技術ブログ">
   <meta property="og:type" content="website">
   <meta property="og:title" content="dragon-enginner">
-  <meta property="og:description" content="Unity・Azure・生成AIの実践知をまとめる技術ブログ">
+  <meta property="og:description" content="Azure・生成AIの実践知をまとめる技術ブログ">
   <meta property="og:url" content="https://kind-mud-063fee810.4.azurestaticapps.net/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
@@ -29,7 +29,7 @@
       <div class="container">
         <div class="hero-card">
           <h1>カテゴリで探せる技術ブログ</h1>
-          <p>Unity、Azure、生成AIをテーマに、実装ベースの知見をカテゴリ整理して蓄積しています。</p>
+          <p>Azureと生成AIをテーマに、実装ベースの知見をカテゴリ整理して蓄積しています。</p>
         </div>
       </div>
     </section>
@@ -39,26 +39,20 @@
         <section class="section" id="featured">
           <h2>特集記事</h2>
           <article class="card featured">
-            <h3>Azure Static Web Apps でポートフォリオを公開する最短手順</h3>
-            <p class="meta">2026-03-03 | Azure</p>
-            <p>GitHub 連携からデプロイ確認までを、つまずきやすい設定ポイント付きで整理しました。</p>
-            <a class="button" href="posts/azure-static-web-apps.html">記事を読む</a>
+            <h3>IR-Brain Azure認証構成メモ</h3>
+            <p class="meta">2026-03-07 | Azure</p>
+            <p>Entra ID認証、Key Vault、Managed Identity、Azure OpenAI連携を実務向けに整理した備忘録です。</p>
+            <a class="button" href="posts/ir-brain-azure-auth-memo.html">記事を読む</a>
           </article>
         </section>
 
         <section class="section" id="categories">
           <h2>カテゴリ別記事</h2>
 
-          <article class="card category-block" id="cat-unity">
-            <h3>Unity</h3>
-            <ul class="link-list">
-              <li><a href="posts/unity-2d-collision.html">Unity 2D で当たり判定を安定させる設計メモ</a><span class="date-chip">2026-03-03</span></li>
-            </ul>
-          </article>
-
           <article class="card category-block" id="cat-azure">
             <h3>Azure</h3>
             <ul class="link-list">
+              <li><a href="posts/ir-brain-azure-auth-memo.html">IR-Brain Azure認証構成メモ</a><span class="date-chip">2026-03-07</span></li>
               <li><a href="posts/azure-static-web-apps.html">Azure Static Web Apps でポートフォリオを公開する最短手順</a><span class="date-chip">2026-03-03</span></li>
               <li><a href="posts/azure-vm-checklist.html">Azure VM 初期構築チェックリスト</a><span class="date-chip">2026-03-03</span></li>
             </ul>
@@ -75,7 +69,7 @@
         <section class="section" id="about">
           <h2>プロフィール</h2>
           <article class="card">
-            <p>dragon-enginner。ゲーム開発、クラウド構築、生成AI活用を横断して、実務に繋がる実装知識を蓄積しています。</p>
+            <p>dragon-enginner。クラウド構築と生成AI活用を横断して、実務に繋がる実装知識を蓄積しています。</p>
             <p>このブログでは「すぐ試せること」と「運用で困らないこと」を重視して発信します。</p>
           </article>
         </section>
@@ -89,10 +83,17 @@
             <ul class="tree-list">
               <li>
                 <details open>
+                  <summary>07日</summary>
+                  <ul>
+                    <li><a href="posts/ir-brain-azure-auth-memo.html">IR-Brain Azure認証構成メモ</a></li>
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <details>
                   <summary>03日</summary>
                   <ul>
                     <li><a href="posts/azure-static-web-apps.html">Azure Static Web Apps でポートフォリオを公開する最短手順</a></li>
-                    <li><a href="posts/unity-2d-collision.html">Unity 2D で当たり判定を安定させる設計メモ</a></li>
                     <li><a href="posts/azure-vm-checklist.html">Azure VM 初期構築チェックリスト</a></li>
                     <li><a href="posts/genai-pdf-summary.html">PDF 要約ワークフローを生成AIで組む</a></li>
                   </ul>
@@ -112,4 +113,3 @@
   </footer>
 </body>
 </html>
-

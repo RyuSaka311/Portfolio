@@ -1,0 +1,422 @@
+﻿<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IR-Brain Azure認証構成メモ</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #111833;
+      --panel: #141d3d;
+      --line: #2a3a74;
+      --text: #e7ecff;
+      --muted: #9dadde;
+      --accent: #67b0ff;
+      --warn: #ffd27a;
+      --ok: #7be2b4;
+      --shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif;
+      line-height: 1.65;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 100% -10%, #1a2b64 0%, transparent 60%),
+        radial-gradient(900px 500px at -10% 0%, #1d2250 0%, transparent 60%),
+        var(--bg);
+    }
+
+    .wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    header {
+      background: linear-gradient(145deg, #162250, #111833);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(1.25rem, 2.3vw, 1.9rem);
+      letter-spacing: 0.01em;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    section {
+      background: linear-gradient(180deg, rgba(20, 29, 61, 0.95), rgba(16, 24, 50, 0.95));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+      margin-top: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+      color: #d8e4ff;
+      border-left: 4px solid var(--accent);
+      padding-left: 10px;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 1rem;
+      color: #d3ddff;
+    }
+
+    p, li { margin: 6px 0; }
+
+    ul {
+      margin: 8px 0;
+      padding-left: 1.1rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .panel {
+      background: var(--bg-soft);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+    }
+
+    pre {
+      margin: 8px 0;
+      padding: 12px;
+      border-radius: 10px;
+      background: #0b132d;
+      border: 1px solid #30458d;
+      color: #dbe6ff;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    code {
+      background: rgba(103, 176, 255, 0.14);
+      color: #cce0ff;
+      border: 1px solid rgba(103, 176, 255, 0.26);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      font-size: 0.92em;
+      word-break: break-all;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      display: block;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 9px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #1b2b5f;
+      color: #eaf0ff;
+      font-weight: 600;
+    }
+
+    td { background: rgba(14, 21, 45, 0.9); }
+
+    .muted { color: var(--muted); }
+    .warn { color: var(--warn); }
+    .ok { color: var(--ok); }
+
+    @media (max-width: 840px) {
+      .grid { grid-template-columns: 1fr; }
+      section { padding: 14px; }
+      pre { font-size: 0.88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <h1>IR-Brain Azure認証構成メモ</h1>
+      <div class="meta">対象: IR-Brain / Azure認証・機密情報管理・OpenAI接続 / 更新メモ用途</div>
+    </header>
+
+    <section>
+      <h2>1. 全体概要</h2>
+      <p>IR-Brain は Microsoft Entra ID でユーザー認証し、アプリから Managed Identity で Key Vault と Azure OpenAI に接続する構成を採用している。秘密情報は Key Vault で一元管理し、アプリコードに固定値を持たせない。</p>
+      <pre>User
+  ↓
+Microsoft Entra ID Login
+  ↓
+Blazor Server (App Service)
+  ↓
+Managed Identity
+  ↓
+Key Vault
+  ↓
+Azure OpenAI</pre>
+    </section>
+
+    <section>
+      <h2>2. 今回採用した認証方式</h2>
+      <ul>
+        <li>Microsoft Entra ID を使用</li>
+        <li>App Registration を作成</li>
+        <li>マルチテナント対応</li>
+        <li>App Service 上の Blazor Server から OpenID Connect でログイン</li>
+        <li>Tenant 未設定時は <code>common</code> を利用</li>
+      </ul>
+      <div class="grid">
+        <div class="panel">
+          <h3>必須設定</h3>
+          <ul>
+            <li><code>AZUREAD_CLIENT_ID</code></li>
+            <li><code>AZUREAD_CLIENT_SECRET</code></li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>任意設定</h3>
+          <ul>
+            <li><code>AZUREAD_TENANT_ID</code></li>
+            <li>Instance: <code>https://login.microsoftonline.com/</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. App Registration 設定内容</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>設定値</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>アプリ名</td>
+            <td><code>ir-brain</code></td>
+          </tr>
+          <tr>
+            <td>Supported account types</td>
+            <td>任意の Entra ID テナント + 個人 Microsoft アカウント</td>
+          </tr>
+          <tr>
+            <td>Platform type</td>
+            <td>Web</td>
+          </tr>
+          <tr>
+            <td>Redirect URI (本番)</td>
+            <td><code>https://ir-brain-hkgxf7engvcbdcah.eastasia-01.azurewebsites.net/signin-oidc</code></td>
+          </tr>
+          <tr>
+            <td>Redirect URI (ローカル)</td>
+            <td><code>https://localhost:5001/signin-oidc</code></td>
+          </tr>
+        </tbody>
+      </table>
+      <h3>注意点</h3>
+      <ul>
+        <li><span class="warn">redirect_uri は完全一致が必須</span></li>
+        <li><code>/signin-oidc</code> を必ず付与する</li>
+        <li><code>http</code> ではなく <code>https</code> を使用する</li>
+        <li>末尾スラッシュ違いで失敗するため URL 文字列を固定で管理する</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Key Vault の役割</h2>
+      <ul>
+        <li>APIキーや Client Secret をコードに書かないために使用</li>
+        <li>App Service の Managed Identity から Secret を取得</li>
+        <li>Key Vault は Azure RBAC モードで作成</li>
+        <li>今回利用は Secret のみ（Key / Certificate は未使用）</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. 現在登録している Secret</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Secret 名</th>
+            <th>用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>AZUREAD-CLIENT-ID</code></td>
+            <td>Microsoft ログインの Client ID</td>
+          </tr>
+          <tr>
+            <td><code>AZUREAD-CLIENT-SECRET</code></td>
+            <td>Microsoft ログインの Client Secret</td>
+          </tr>
+          <tr>
+            <td><code>AZURE-OPENAI-API-KEY</code></td>
+            <td>Azure OpenAI APIキー</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted">補足: Key Vault の Secret 名の <code>--</code> は .NET 設定で <code>:</code> に変換される。</p>
+      <pre><code>Stripe--SecretKey  =>  Stripe:SecretKey</code></pre>
+    </section>
+
+    <section>
+      <h2>6. Managed Identity 設定</h2>
+      <ul>
+        <li>App Service の System Assigned Managed Identity を有効化</li>
+      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>対象</th>
+            <th>ロール</th>
+            <th>用途</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Key Vault</td>
+            <td><code>Key Vault Secrets User</code></td>
+            <td>Secret 読み取り</td>
+          </tr>
+          <tr>
+            <td>Azure OpenAI</td>
+            <td><code>Cognitive Services OpenAI User</code></td>
+            <td>OpenAI 推論利用</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>7. Azure OpenAI の設定</h2>
+      <ul>
+        <li>Azure OpenAI リソース作成済み</li>
+        <li>現在は APIキー利用あり</li>
+        <li>将来的には Managed Identity 接続へ移行可能</li>
+        <li>モデル呼び出し時は <code>model</code> ではなく <code>deployment name</code> を使用</li>
+      </ul>
+      <pre><code>例: gpt-4o-mini</code></pre>
+    </section>
+
+    <section>
+      <h2>8. App Service 側の構成</h2>
+      <ul>
+        <li>Blazor Server を App Service にデプロイ</li>
+        <li>SQLite は Azure App Service 向けに <code>HOME/data</code> を利用</li>
+        <li>Static Web Apps ではなく App Service を使用</li>
+        <li><code>500.30</code> 発生時は起動例外（Program.cs / DI / DB / 認証初期化）を優先確認</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>9. よくあるハマりポイント</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>症状・ミス</th>
+            <th>確認ポイント</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>redirect_uri 不一致</td><td>App Registration の URI と実アクセス URL を完全一致させる</td></tr>
+          <tr><td><code>/signin-oidc</code> 付け忘れ</td><td>OIDC の callback path を URL 末尾に含める</td></tr>
+          <tr><td>App Registration と実アクセスURLの不一致</td><td>本番 URL / ローカル URL を個別登録する</td></tr>
+          <tr><td>Key Vault の権限不足</td><td>Managed Identity に <code>Key Vault Secrets User</code> があるか確認</td></tr>
+          <tr><td>RBAC反映待ち</td><td>ロール付与後は数分待って再試行する</td></tr>
+          <tr><td>SQLite の保存先が不正</td><td><code>HOME/data</code> 配下に置く</td></tr>
+          <tr><td>OpenAI で deployment name 未使用</td><td>実デプロイ名（例: <code>gpt-4o-mini</code>）を指定する</td></tr>
+          <tr><td>App Service に Publish していない</td><td>ローカル実行と Azure 実行を混同しない</td></tr>
+          <tr><td>Static Web Apps と App Service を混同</td><td>本プロジェクトは App Service 前提の設定で統一する</td></tr>
+          <tr><td><code>500.30</code></td><td>Program.cs / DI / DB / 認証初期化の例外ログを確認する</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>10. 今後追加予定の Secret</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Secret 名</th>
+            <th>用途メモ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>Stripe--SecretKey</code></td><td>Stripe 秘密鍵</td></tr>
+          <tr><td><code>Stripe--WebhookSecret</code></td><td>Webhook 検証用シークレット</td></tr>
+          <tr><td><code>RESEND-API-KEY</code></td><td>メール送信 APIキー</td></tr>
+          <tr><td><code>ADMIN-PASSWORD</code></td><td>管理者用パスワード</td></tr>
+          <tr><td><code>ConnectionStrings--Default</code></td><td>.NET 接続文字列 (<code>ConnectionStrings:Default</code>)</td></tr>
+          <tr><td><code>ADMIN-EMAIL</code></td><td>管理者通知先メールアドレス</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>11. 確認手順</h2>
+      <div class="grid">
+        <div class="panel">
+          <h3>ローカル確認</h3>
+          <ul>
+            <li>App Registration に <code>https://localhost:5001/signin-oidc</code> を追加</li>
+            <li>Microsoft ログインを実行して callback 成否を確認</li>
+            <li>Azure CLI ログイン / Visual Studio 認証状態を確認</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Azure 確認</h3>
+          <ul>
+            <li>App Service に Publish</li>
+            <li>Entra ID ログイン確認</li>
+            <li>Key Vault Secret 読み取り確認</li>
+            <li>Azure OpenAI 接続確認</li>
+            <li>App Service Log Stream 確認</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>12. サンプルコード</h2>
+      <h3>Program.cs の考え方</h3>
+      <ul>
+        <li>Key Vault を構成に追加</li>
+        <li>AzureAd 設定（Client ID / Secret / Tenant）を取得</li>
+        <li>OpenID Connect を構成</li>
+        <li>Azure OpenAI クライアントを接続</li>
+      </ul>
+      <pre><code class="language-csharp">var clientId = builder.Configuration["AZUREAD-CLIENT-ID"];
+var clientSecret = builder.Configuration["AZUREAD-CLIENT-SECRET"];
+var tenantId = builder.Configuration["AZUREAD_TENANT_ID"] ?? "common";</code></pre>
+      <p class="ok">メモ: 実装では null/空文字チェックと起動時ログ出力を加えると障害切り分けが早い。</p>
+    </section>
+  </main>
+</body>
+</html>
