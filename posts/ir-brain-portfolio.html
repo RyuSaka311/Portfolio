@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IR-Brain 開発紹介 | 投資判断向けAIレポートWebアプリ</title>
+  <meta name="description" content="IR-Brain は、ニュースURLやPDFを投入し、本文抽出とAI要約を非同期実行して投資判断向けの構造化レポートを返す開発中のWebアプリです。UIだけでなく、Worker、認証、課金、マルチテナントまで含めた実装を紹介します。">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="IR-Brain 開発紹介">
+  <meta property="og:description" content="投資判断向けの構造化レポートを返すWebアプリ IR-Brain の実装紹介">
+  <meta property="og:url" content="https://kind-mud-063fee810.4.azurestaticapps.net/posts/ir-brain-portfolio.html">
+  <style>
+    :root {
+      --bg: #07131d;
+      --bg-alt: #0c1c2b;
+      --panel: rgba(13, 31, 46, 0.88);
+      --panel-strong: rgba(16, 38, 56, 0.96);
+      --line: rgba(132, 188, 214, 0.2);
+      --text: #e8f3f8;
+      --muted: #9db8c8;
+      --accent: #47c0db;
+      --accent-soft: #18394b;
+      --good: #88d1a7;
+      --warn: #f0cf87;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --max: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", sans-serif;
+      line-height: 1.75;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(71, 192, 219, 0.18), transparent 28%),
+        radial-gradient(circle at 85% 12%, rgba(124, 161, 255, 0.14), transparent 30%),
+        linear-gradient(180deg, #08121b 0%, #07131d 55%, #091a25 100%);
+    }
+
+    a {
+      color: #91deee;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 24px 16px 64px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .topnav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .hero-card,
+    .panel,
+    section {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-strong) 100%);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .chip strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 1.15;
+      letter-spacing: 0.01em;
+    }
+
+    .lead {
+      margin: 0 0 20px;
+      color: #c8dce7;
+      font-size: 1.05rem;
+      max-width: 56rem;
+    }
+
+    .hero-points {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .hero-point {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .hero-point strong,
+    .stat strong,
+    .stack-card h3,
+    .feature-card h3 {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .hero-side {
+      padding: 24px;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(71, 192, 219, 0.08);
+      border: 1px solid rgba(71, 192, 219, 0.14);
+    }
+
+    .stat small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    section {
+      padding: 24px;
+      margin-top: 20px;
+    }
+
+    h2 {
+      margin: 0 0 14px;
+      font-size: clamp(1.3rem, 2vw, 1.75rem);
+      line-height: 1.3;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 1.02rem;
+    }
+
+    p {
+      margin: 0 0 12px;
+      color: #d4e4ec;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid-2,
+    .grid-3,
+    .feature-grid,
+    .stack-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .feature-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .stack-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      margin-top: 14px;
+    }
+
+    .panel,
+    .feature-card,
+    .stack-card,
+    .timeline-step {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .timeline-step {
+      position: relative;
+      padding-left: 56px;
+    }
+
+    .timeline-step::before {
+      content: attr(data-step);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(71, 192, 219, 0.14);
+      border: 1px solid rgba(71, 192, 219, 0.28);
+      color: #bfeef7;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 18px;
+    }
+
+    li {
+      margin: 7px 0;
+      color: #d4e4ec;
+    }
+
+    .code {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(4, 11, 17, 0.78);
+      border: 1px solid rgba(125, 173, 196, 0.18);
+      overflow-x: auto;
+      white-space: pre;
+      font-family: Consolas, "Courier New", monospace;
+      color: #d4eef4;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .note {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(240, 207, 135, 0.08);
+      border: 1px solid rgba(240, 207, 135, 0.16);
+      color: #efe2b7;
+    }
+
+    .good {
+      color: var(--good);
+    }
+
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .grid-2,
+      .grid-3,
+      .feature-grid,
+      .stack-grid,
+      .hero-points {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="topbar">
+      <a href="../index.html">← ブログ一覧へ戻る</a>
+      <nav class="topnav" aria-label="Section navigation">
+        <a href="#overview">概要</a>
+        <a href="#features">主要機能</a>
+        <a href="#stack">技術スタック</a>
+        <a href="#architecture">設計</a>
+        <a href="#issues">課題と改善</a>
+      </nav>
+    </div>
+
+    <div class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">
+          <span class="chip"><strong>IR-Brain</strong> 開発中 / 未公開</span>
+          <span class="chip">Blazor Server + Minimal API + Worker</span>
+          <span class="chip">投資判断向けの構造化要約</span>
+        </div>
+        <h1>ニュースURLやPDFを、投資家向けの構造化レポートに変換するWebアプリ</h1>
+        <p class="lead">IR-Brain は、ニュース記事のURLまたはPDFを投入すると、本文抽出とAI要約を非同期で実行し、投資判断向けの観点で整理したレポートを返す .NET 8 ベースのWebアプリです。単発の要約UIではなく、認証、課金、マルチテナント、非同期ワーカー、永続化まで含めて一つのアプリとして組んでいます。</p>
+        <div class="hero-points">
+          <div class="hero-point">
+            <strong>入力から保存までを一気通貫で実装</strong>
+            URL取得、PDF抽出、要約、DB保存、レポート表示までを同一アプリ内で接続しています。
+          </div>
+          <div class="hero-point">
+            <strong>投資家向けの観点を前提に設計</strong>
+            一般的な要約ではなく、positive / negative / risks / guidance などの構造で結果を扱います。
+          </div>
+          <div class="hero-point">
+            <strong>UIの裏側まで実装範囲が広い</strong>
+            認証、Stripe課金、Tenant分離、管理機能、起動時 migration / seed まで含めて構成しています。
+          </div>
+        </div>
+      </article>
+
+      <aside class="hero-side">
+        <div class="stat">
+          <small>入力</small>
+          <strong>URL / PDF</strong>
+          <span class="muted">PDFアップロードは 20MB 上限。URL取得は 15 秒タイムアウトです。</span>
+        </div>
+        <div class="stat">
+          <small>処理モデル</small>
+          <strong>Pending → Processing → Done / Error</strong>
+          <span class="muted">Source を先に登録し、HostedService の SourceWorker が非同期で処理します。</span>
+        </div>
+        <div class="stat">
+          <small>永続化</small>
+          <strong>SQLite + EF Core 8</strong>
+          <span class="muted">Source と DocumentText / Summary は 1:1。TenantId を持つ形で保存します。</span>
+        </div>
+      </aside>
+    </div>
+
+    <section id="overview">
+      <h2>プロダクト概要</h2>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>解こうとしている課題</h3>
+          <p>ニュースやIR資料を読んで投資判断に必要な情報を抜き出す作業は、単なる要約よりも整理の仕方が難しいと考えています。IR-Brain では、記事やPDFの本文を取って終わりではなく、投資家が見たい比較軸に寄せて結果を構造化することを重視しています。</p>
+          <p>そのため、出力は自由文だけではなく、<span class="good">executive summary / highlights / positives / negatives / risks / guidance / stock impact / performance / company / ticker</span> といった項目で扱える前提にしています。</p>
+        </div>
+        <div class="panel">
+          <h3>入力から出力までの流れ</h3>
+          <p>ユーザーはニュースURLまたはPDFを登録します。登録時点では Source を <code>Pending</code> として保存し、本文取得や要約はリクエスト同期で完結させずに SourceWorker へ渡します。処理完了後、抽出本文は DocumentText、要約結果は Summary に保存され、レポート画面はポーリングで進捗と結果を追従します。</p>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="timeline-step" data-step="1">
+          URL または PDF を投入し、Source を <code>Pending</code> 状態で登録する
+        </div>
+        <div class="timeline-step" data-step="2">
+          SourceWorker が対象を取り出し、URLならHTML取得、PDFなら PdfPig で全文抽出を行う
+        </div>
+        <div class="timeline-step" data-step="3">
+          抽出本文を正規化し、Azure OpenAI による要約を実行する。利用不可時は DummySummarizer にフォールバックする
+        </div>
+        <div class="timeline-step" data-step="4">
+          DocumentText と Summary を保存し、Source を <code>Done</code> または <code>Error</code> に更新する
+        </div>
+        <div class="timeline-step" data-step="5">
+          レポート画面でポーリングしながら、投資家向けの構造化レポートとして表示する
+        </div>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>実装した主要機能</h2>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <h3>URL / PDF 取込</h3>
+          <p>URL入力と PDF アップロードの両方に対応しています。URL取得は 15 秒タイムアウト、HTML抽出では <code>script</code> / <code>style</code> を除去してテキスト正規化を行います。PDF は PdfPig で全文抽出し、アップロードサイズは 20MB 上限です。</p>
+        </article>
+        <article class="feature-card">
+          <h3>非同期要約パイプライン</h3>
+          <p>投入直後に重い処理を同期実行せず、Source を状態管理しながら HostedService の SourceWorker で非同期処理します。進行状態が明示されるため、UI、DB、ワーカーの責務を分離しやすい構成です。</p>
+        </article>
+        <article class="feature-card">
+          <h3>投資家向け要約プリセット</h3>
+          <p>要約では複数の観点プリセットを選択でき、インカム投資家、バリュー投資家、グロース投資家、イベント短期、共通比較軸などを反映できます。単なる「短くする要約」ではなく、見る人の意思決定軸を先に置いた設計です。</p>
+        </article>
+        <article class="feature-card">
+          <h3>レポート表示</h3>
+          <p>結果は自由文ではなく構造化されたサマリーとして保持します。company / ticker のような識別情報に加えて、highlights、positives、negatives、risks などを分けて表示できるため、後段の比較やUI整理にもつなげやすい形です。</p>
+        </article>
+        <article class="feature-card">
+          <h3>認証 / 認可</h3>
+          <p>ASP.NET Core Identity をベースに Cookie 認証を構成し、Microsoft OpenID Connect ログインに対応しています。現状の認証導線は Microsoft サインイン中心です。EmailConfirmed を考慮したユーザー管理、ロックアウト、強めのパスワード要件、Admin ロールと AdminOnly ポリシーも入れています。</p>
+        </article>
+        <article class="feature-card">
+          <h3>課金と利用制御</h3>
+          <p>Stripe を連携し、free / pro / biz のプラン定義とサブスクリプション管理を実装しています。Webhook では署名検証を行い、Tenant ごとに有効な Subscription を 1 件に制約しています。利用数は処理開始時ではなく <code>Done</code> 後にコミットする設計です。</p>
+        </article>
+        <article class="feature-card">
+          <h3>マルチテナント管理</h3>
+          <p>ApplicationUser が TenantId を持ち、TenantProvider がログインユーザーからテナントを解決します。Source、Summary、DocumentText、Subscription、UsageCounter などのデータは Tenant 単位で分離しています。管理者向けにはテナント作成、更新、停止、再開、ユーザーの Tenant 紐付け、ロック制御、メール確認状態更新の画面があります。</p>
+        </article>
+        <article class="feature-card">
+          <h3>永続化と制約設計</h3>
+          <p>SQLite を Entity Framework Core 8 で扱い、Migration を用意しています。Source と DocumentText / Summary は 1:1 関係で保持し、ユニーク制約やインデックスも設定しています。SQLite 運用なので、大規模高並行を前提にした説明は避けつつ、個人開発の一貫した永続化基盤として実装しています。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="stack">
+      <h2>技術スタック</h2>
+      <div class="stack-grid">
+        <article class="stack-card">
+          <h3>フロント</h3>
+          <p>Blazor Server（InteractiveServer）</p>
+          <p class="muted">サーバー側状態管理を活かしつつ、フォーム入力やレポート画面を構成。</p>
+        </article>
+        <article class="stack-card">
+          <h3>バックエンド</h3>
+          <p>.NET 8 / ASP.NET Core / Minimal API / HostedService</p>
+          <p class="muted">UI本体と API、非同期処理を同じアプリケーション境界で扱っています。</p>
+        </article>
+        <article class="stack-card">
+          <h3>データベース</h3>
+          <p>Entity Framework Core 8 / SQLite</p>
+          <p class="muted">Migration、1:1 関係、TenantId ベースの分離、各種制約を実装。</p>
+        </article>
+        <article class="stack-card">
+          <h3>認証</h3>
+          <p>ASP.NET Core Identity / Cookie 認証 / Microsoft OpenID Connect</p>
+          <p class="muted">EmailConfirmed、ロックアウト、AdminOnly ポリシーあり。</p>
+        </article>
+        <article class="stack-card">
+          <h3>外部連携</h3>
+          <p>Azure Key Vault / Azure OpenAI / Azure AI Search / Stripe / SignalR / PdfPig</p>
+          <p class="muted">AI、機密情報管理、課金、PDF抽出などを必要範囲で接続しています。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <h2>アーキテクチャ / 設計上の工夫</h2>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Worker を中核にした処理分離</h3>
+          <p>SourceWorker を HostedService として分離したことで、UIから見える登録処理と、時間のかかる本文抽出・要約処理を分けています。Source の状態遷移を軸にすることで、後から失敗時挙動や再試行戦略を整理しやすい土台になっています。</p>
+        </div>
+        <div class="panel">
+          <h3>フォールバックを前提にした AI 接続</h3>
+          <p>Azure OpenAI は ChatClient / EmbeddingClient を利用できる構成ですが、利用不可時は DummySummarizer にフォールバックする実装があります。AI 接続の有無でアプリ全体が起動不能にならないようにしている点は、開発段階でも扱いやすい設計です。</p>
+        </div>
+        <div class="panel">
+          <h3>Tenant 単位のデータ分離</h3>
+          <p>TenantId を主要エンティティに持たせ、アプリ利用者とデータ境界を明確にしています。個人開発のアプリでも、後から権限や課金を足すのではなく、最初からテナント単位でまとめる設計に寄せています。</p>
+        </div>
+        <div class="panel">
+          <h3>Subscription 制約と利用数コミット</h3>
+          <p>サブスクリプションは Tenant ごとに有効 1 件へ制約し、課金状態を曖昧にしにくくしています。利用数も成功前に先行計上せず、処理完了後にコミットするため、課金と処理成功がずれにくい設計です。現状の課金予約は改善余地がありますが、制約の置き方は明確です。</p>
+        </div>
+        <div class="panel">
+          <h3>起動時 migration / seed</h3>
+          <p>起動時に migration と seed を流す仕組みを持たせ、初期管理者や基本データの立ち上がりをコード側で完結させています。開発環境とデプロイ先での初期差分を減らしやすい構成です。</p>
+        </div>
+        <div class="panel">
+          <h3>インフラ設定の耐障害性</h3>
+          <p>Azure Key Vault の読み込みに失敗しても起動継続できるようにしており、Managed Identity 優先、API Key フォールバックの実装もあります。Azure App Service 上の SQLite 配置も考慮しており、構成の前提がコードに反映されています。</p>
+        </div>
+      </div>
+
+      <div class="code">User Input (URL / PDF)
+  -> Source: Pending
+  -> SourceWorker
+     -> HTML extract or PdfPig text extract
+     -> Text normalize
+     -> Azure OpenAI summarization
+        -> fallback: DummySummarizer
+     -> Save DocumentText / Summary
+     -> Source: Done or Error
+  -> Report page polling
+  -> Tenant-scoped usage / subscription evaluation</div>
+
+      <div class="note">
+        現行のレポート更新はポーリング中心です。SignalR は技術スタックに含まれますが、このページでは結果反映を「リアルタイム配信」とは書いていません。
+      </div>
+    </section>
+
+    <section>
+      <h2>こだわりポイント</h2>
+      <div class="grid-2">
+        <div class="panel">
+          <h3>単なる要約アプリに寄せていない</h3>
+          <p>IR-Brain の特徴は、ニュースやPDFを要約すること自体ではなく、<strong>投資判断に使う情報の並び方</strong>まで含めて設計している点です。投資家の観点プリセットを選べること、結果を構造化データとして持つことにより、出力の使い方が最初から具体化されています。</p>
+        </div>
+        <div class="panel">
+          <h3>UIの外側まで実装範囲が広い</h3>
+          <p>ポートフォリオではフロントだけが見えやすいですが、このアプリでは Blazor UI の背後に、Minimal API、Identity、Worker、SQLite、Stripe、Key Vault、Tenant 管理まで実装しています。画面を作るだけでなく、アプリとして継続運用できる形に寄せようとしている点を強く出したい制作物です。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="issues">
+      <h2>課題と今後の改善</h2>
+      <ul>
+        <li>IR-Brain は開発中であり、未公開です。本番運用実績がある前提では書いていません。</li>
+        <li>現在の認証導線は Microsoft サインイン中心で、設計資料上の register / login API 記述と現行コードは完全一致ではありません。</li>
+        <li>一部の Home 文言に「PDFは今後」と読める記載があっても、実装上は PDF アップロード機能が存在します。紹介文はコード実装を優先して整理しています。</li>
+        <li>課金予約は完全な永続予約テーブルとしてはまだ改善余地があります。</li>
+        <li>SQLite 運用のため、高並行・大規模トラフィック前提の構成としては扱っていません。</li>
+        <li>監視基盤や監査ログが完成しているとは言えないため、その種の運用成熟度は今後の課題です。</li>
+        <li>Azure AI Search や FaqRagService の要素はありますが、アプリ全体をフルRAGプロダクトと断定する説明は避けています。</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>まとめ</h2>
+      <p>IR-Brain は、ニュースURLやPDFを入力として、本文抽出、AI要約、構造化レポート表示までをつなぐ Web アプリです。見せたい価値は「要約できます」ではなく、<strong>投資判断向けの情報整理を、UI・API・Worker・DB・認証・課金・テナント管理まで含めて一体実装している</strong>点にあります。</p>
+      <p>個人開発の段階でも、処理の流れ、データ境界、権限、課金、失敗時フォールバックまで考慮して組んでいるため、単機能デモではなく、実装力の広さと設計の接続性を見せられる制作物になっています。</p>
+    </section>
+
+    <p class="footer">IR-Brain introduction page / updated 2026-03-15</p>
+  </main>
+</body>
+</html>
